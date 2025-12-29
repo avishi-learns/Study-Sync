@@ -1,204 +1,224 @@
-:root {
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --text: #111827;
-  --primary: #5b6cff;
-  --border: #e5e7eb;
-  --radius: 14px;
-  --muted: #6b7280;
-}
+document.addEventListener("DOMContentLoaded", () => {
 
-.dark {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --text: #e5e7eb;
-}
+  /* ===== THEME ===== */
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
+  }
 
-* {
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
+  themeToggle.onclick = () => {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("theme",
+      document.body.classList.contains("dark") ? "dark" : "light");
+  };
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-}
+  /* ===== NAV ===== */
+  window.showView = id => {
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    document.querySelectorAll(".nav-link").forEach(l =>
+      l.classList.toggle("active", l.dataset.section === id)
+    );
+    if (id === "planner") renderPlanner();
+  };
 
-.app {
-  display: flex;
-  min-height: calc(100vh - 60px);
-}
+  document.querySelectorAll(".nav-link").forEach(l =>
+    l.onclick = () => showView(l.dataset.section)
+  );
 
-/* SIDEBAR */
-.sidebar {
-  width: 260px;
-  background: var(--card);
-  padding: 28px;
-  border-right: 1px solid var(--border);
-}
+  /* ===== DASHBOARD ===== */
+  let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
+  let selectedSubjectId = JSON.parse(localStorage.getItem("selectedSubject"));
 
-.brand {
-  font-family: 'Playfair Display', serif;
-  font-size: 30px;
-  margin-bottom: 40px;
-}
+  function saveDashboard() {
+    localStorage.setItem("subjects", JSON.stringify(subjects));
+    localStorage.setItem("selectedSubject", JSON.stringify(selectedSubjectId));
+  }
 
-.sidebar nav a {
-  display: flex;
-  gap: 10px;
-  padding: 12px 16px;
-  margin-bottom: 6px;
-  border-radius: 12px;
-  text-decoration: none;
-  color: var(--text);
-  cursor: pointer;
-}
+  window.addSubject = () => {
+    if (!subjectInput.value.trim()) return;
+    subjects.push({ id: Date.now(), name: subjectInput.value, tasks: [] });
+    subjectInput.value = "";
+    saveDashboard();
+    renderSubjects();
+  };
 
-.sidebar nav a.active {
-  background: var(--primary);
-  color: white;
-}
+  window.selectSubject = id => {
+    selectedSubjectId = id;
+    saveDashboard();
+    renderSubjects();
+    renderTasks();
+  };
 
-/* MAIN */
-.content {
-  flex: 1;
-  padding: 40px;
-}
+  window.addTask = () => {
+    if (!taskInput.value.trim() || !selectedSubjectId) return;
+    subjects.find(s => s.id === selectedSubjectId)
+      .tasks.push({ text: taskInput.value, done: false });
+    taskInput.value = "";
+    saveDashboard();
+    renderTasks();
+    renderSubjects();
+  };
 
-.view { display: none; }
-.view.active { display: block; }
+  window.toggleTask = i => {
+    const s = subjects.find(s => s.id === selectedSubjectId);
+    s.tasks[i].done = !s.tasks[i].done;
+    saveDashboard();
+    renderTasks();
+    renderSubjects();
+  };
 
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 30px;
-}
+  window.deleteTask = i => {
+    const s = subjects.find(s => s.id === selectedSubjectId);
+    s.tasks.splice(i, 1);
+    saveDashboard();
+    renderTasks();
+    renderSubjects();
+  };
 
-/* CARD */
-.card {
-  background: var(--card);
-  padding: 24px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  margin-bottom: 20px;
-}
+  function renderSubjects() {
+    subjectsContainer.innerHTML = "";
+    subjects.forEach(s => {
+      const done = s.tasks.filter(t => t.done).length;
+      const total = s.tasks.length || 1;
+      subjectsContainer.innerHTML += `
+        <div class="card">
+          <h3>${s.name}</h3>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${(done/total)*100}%"></div>
+          </div>
+          <p>${done}/${s.tasks.length}</p>
+          <button onclick="selectSubject(${s.id})">Select</button>
+        </div>`;
+    });
+    updateOverall();
+  }
 
-/* INPUTS */
-input, select {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text);
-}
+  function renderTasks() {
+    if (!selectedSubjectId) {
+      taskSection.style.display = "none";
+      return;
+    }
+    taskSection.style.display = "block";
+    taskList.innerHTML = "";
+    const s = subjects.find(s => s.id === selectedSubjectId);
+    s.tasks.forEach((t,i) =>
+      taskList.innerHTML += `
+        <div class="task-row">
+          <input type="checkbox" ${t.done?"checked":""}
+            onchange="toggleTask(${i})">
+          <span class="${t.done?"task-done":""}">${t.text}</span>
+          <button class="delete-btn" onclick="deleteTask(${i})">✖</button>
+        </div>`
+    );
+  }
 
-button {
-  padding: 10px 18px;
-  border-radius: 10px;
-  border: none;
-  background: var(--primary);
-  color: white;
-  cursor: pointer;
-}
+  function updateOverall() {
+    let d=0,t=0;
+    subjects.forEach(s=>{
+      d+=s.tasks.filter(x=>x.done).length;
+      t+=s.tasks.length;
+    });
+    const p=t?Math.round(d/t*100):0;
+    overallProgress.style.width=p+"%";
+    overallText.textContent=p+"%";
+  }
 
-/* TASKS */
-.task-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-}
+  function renderPlanner() {
+    todayTasks.innerHTML="";
+    const grouped = {};
+    subjects.forEach(s=>s.tasks.filter(t=>!t.done).forEach(t=>{
+      grouped[s.name] = grouped[s.name] || [];
+      grouped[s.name].push(t.text);
+    }));
 
-.task-row span {
-  flex: 1;
-}
+    Object.keys(grouped).forEach(name=>{
+      const div=document.createElement("div");
+      div.className="planner-card";
+      div.innerHTML=`<h3>${name}</h3>`+
+        grouped[name].map(t=>`<div>☐ ${t}</div>`).join("");
+      todayTasks.appendChild(div);
+    });
+  }
 
-.task-done {
-  text-decoration: line-through;
-  opacity: 0.6;
-}
+  /* ===== SYLLABUS ===== */
+  let syllabus = JSON.parse(localStorage.getItem("syllabus")) || [];
 
-.delete-btn {
-  background: transparent;
-  border: none;
-  color: #ef4444;
-  font-size: 16px;
-  cursor: pointer;
-}
+  function saveSyllabus() {
+    localStorage.setItem("syllabus", JSON.stringify(syllabus));
+  }
 
-/* PROGRESS BAR */
-.progress-bar {
-  height: 14px;
-  background: #eaeaf5;
-  border-radius: 20px;
-  margin: 12px 0;
-}
+  window.addSyllabusSubject = () => {
+    if (!syllabusSubjectInput.value.trim()) return;
+    syllabus.push({ subject: syllabusSubjectInput.value, chapters: [] });
+    syllabusSubjectInput.value="";
+    saveSyllabus();
+    renderSyllabus();
+    populateSubjects();
+  };
 
-.progress-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #5b6cff, #7c8cff);
-  border-radius: 20px;
-}
+  window.addChapter = () => {
+    const s = syllabus.find(x=>x.subject===syllabusSubjectSelect.value);
+    if (!chapterInput.value.trim()) return;
+    s.chapters.push({ name: chapterInput.value, subtopics: [] });
+    chapterInput.value="";
+    saveSyllabus();
+    renderSyllabus();
+    populateSubjects();
+  };
 
-/* PLANNER */
-.planner-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-}
+  window.addSubtopic = () => {
+    const s = syllabus.find(x=>x.subject===syllabusSubjectSelect2.value);
+    const c = s.chapters.find(x=>x.name===syllabusChapterSelect.value);
+    if (!subtopicInput.value.trim()) return;
+    c.subtopics.push({ text: subtopicInput.value, done:false });
+    subtopicInput.value="";
+    saveSyllabus();
+    renderSyllabus();
+  };
 
-.planner-card {
-  background: var(--card);
-  padding: 20px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-}
+  window.toggleSubtopic = (si,ci,ti) => {
+    syllabus[si].chapters[ci].subtopics[ti].done^=1;
+    saveSyllabus();
+    renderSyllabus();
+  };
 
-.planner-card h3 {
-  color: var(--primary);
-}
+  function populateSubjects() {
+    syllabusSubjectSelect.innerHTML="";
+    syllabusSubjectSelect2.innerHTML="";
+    syllabus.forEach(s=>{
+      syllabusSubjectSelect.innerHTML+=`<option>${s.subject}</option>`;
+      syllabusSubjectSelect2.innerHTML+=`<option>${s.subject}</option>`;
+    });
+    populateChapterSelect();
+  }
 
-/* SYLLABUS */
-.syllabus-editor .row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 14px;
-}
+  window.populateChapterSelect = () => {
+    syllabusChapterSelect.innerHTML="";
+    const s = syllabus.find(x=>x.subject===syllabusSubjectSelect2.value);
+    if (!s) return;
+    s.chapters.forEach(c=>syllabusChapterSelect.innerHTML+=`<option>${c.name}</option>`);
+  };
 
-.syllabus-subject {
-  font-size: 18px;
-  font-weight: 600;
-  margin-top: 20px;
-}
+  function renderSyllabus() {
+    syllabusContainer.innerHTML="";
+    syllabus.forEach((s,si)=>{
+      syllabusContainer.innerHTML+=`<div class="syllabus-subject">${s.subject}</div>`;
+      s.chapters.forEach((c,ci)=>{
+        syllabusContainer.innerHTML+=`<div class="syllabus-chapter">• ${c.name}</div>`;
+        c.subtopics.forEach((t,ti)=>{
+          syllabusContainer.innerHTML+=`
+            <div class="syllabus-subtopic">
+              <input type="checkbox" ${t.done?"checked":""}
+                onchange="toggleSubtopic(${si},${ci},${ti})">
+              ${t.text}
+            </div>`;
+        });
+      });
+    });
+  }
 
-.syllabus-chapter {
-  margin-left: 20px;
-  margin-top: 8px;
-}
-
-.syllabus-subtopic {
-  margin-left: 40px;
-  display: flex;
-  gap: 10px;
-}
-
-/* FOOTER */
-.footer {
-  text-align: center;
-  padding: 14px 0;
-  font-size: 14px;
-  color: var(--muted);
-  border-top: 1px solid var(--border);
-  background: var(--bg);
-}
-
-.footer a {
-  color: var(--primary);
-  text-decoration: none;
-}
-
-.footer a:hover {
-  text-decoration: underline;
-}
+  renderSubjects();
+  renderTasks();
+  renderSyllabus();
+  populateSubjects();
+});
