@@ -9,113 +9,109 @@
 </head>
 
 <body>
-<div class="app-wrapper">
+<div class="app">
 
-  <div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h1 class="brand">StudySync</h1>
+    <nav>
+      <a class="nav-link active" data-section="dashboard">📊 Dashboard</a>
+      <a class="nav-link" data-section="planner">🗓️ Planner</a>
+      <a class="nav-link" data-section="progress">📈 Progress</a>
+      <a class="nav-link" data-section="syllabus">📘 Syllabus</a>
+    </nav>
+  </aside>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <h1 class="brand">StudySync</h1>
-      <nav>
-        <a class="nav-link active" data-section="dashboard">📊 Dashboard</a>
-        <a class="nav-link" data-section="planner">🗓️ Planner</a>
-        <a class="nav-link" data-section="progress">📈 Progress</a>
-        <a class="nav-link" data-section="syllabus">📘 Syllabus</a>
-      </nav>
-    </aside>
+  <!-- MAIN -->
+  <main class="content">
 
-    <!-- MAIN -->
-    <main class="content">
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="tabs">
+        <button onclick="showView('dashboard')">Dashboard</button>
+        <button onclick="showView('planner')">Planner</button>
+        <button onclick="showView('progress')">Progress</button>
+      </div>
+      <button id="themeToggle">🌙 Dark Mode</button>
+    </div>
 
-      <!-- TOP BAR -->
-      <div class="top-bar">
-        <div class="tabs">
-          <button onclick="showView('dashboard')">Dashboard</button>
-          <button onclick="showView('planner')">Planner</button>
-          <button onclick="showView('progress')">Progress</button>
-        </div>
-        <button id="themeToggle">🌙 Dark Mode</button>
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="view active">
+
+      <div class="card">
+        <h3>Add Subject</h3>
+        <input id="subjectInput" placeholder="e.g. Physics">
+        <button onclick="addSubject()">Add</button>
       </div>
 
-      <!-- DASHBOARD -->
-      <section id="dashboard" class="view active">
+      <div class="card" id="taskSection" style="display:none;">
+        <h3>Add Task</h3>
+        <input id="taskInput" placeholder="e.g. Laws of Motion">
+        <button onclick="addTask()">Add Task</button>
+        <div id="taskList"></div>
+      </div>
 
-        <div class="card">
-          <h3>Add Subject</h3>
-          <input id="subjectInput" placeholder="e.g. Physics">
-          <button onclick="addSubject()">Add</button>
+      <div id="subjectsContainer"></div>
+
+    </section>
+
+    <!-- PLANNER -->
+    <section id="planner" class="view">
+      <h2 class="planner-title">Today's Planner</h2>
+      <div id="todayTasks" class="planner-container"></div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section id="progress" class="view">
+      <h2>Overall Progress</h2>
+      <div class="card">
+        <div class="progress-bar">
+          <div id="overallProgress" class="progress-fill"></div>
+        </div>
+        <span id="overallText">0%</span>
+      </div>
+    </section>
+
+    <!-- SYLLABUS -->
+    <section id="syllabus" class="view">
+      <h2>Syllabus</h2>
+
+      <div class="card syllabus-editor">
+        <h3>Add to Syllabus</h3>
+
+        <div class="row">
+          <input id="syllabusSubjectInput" placeholder="New subject">
+          <button onclick="addSyllabusSubject()">Add Subject</button>
         </div>
 
-        <div class="card" id="taskSection" style="display:none;">
-          <h3>Add Task</h3>
-          <input id="taskInput" placeholder="e.g. Laws of Motion">
-          <button onclick="addTask()">Add Task</button>
-          <div id="taskList"></div>
+        <div class="row">
+          <select id="syllabusSubjectSelect"></select>
+          <input id="chapterInput" placeholder="New chapter">
+          <button onclick="addChapter()">Add Chapter</button>
         </div>
 
-        <div id="subjectsContainer"></div>
-
-      </section>
-
-      <!-- PLANNER -->
-      <section id="planner" class="view">
-        <h2 class="planner-title">Today's Planner</h2>
-        <div id="todayTasks" class="planner-container"></div>
-      </section>
-
-      <!-- PROGRESS -->
-      <section id="progress" class="view">
-        <h2>Overall Progress</h2>
-        <div class="card">
-          <div class="progress-bar">
-            <div id="overallProgress" class="progress-fill"></div>
-          </div>
-          <span id="overallText">0%</span>
+        <div class="row">
+          <select id="syllabusSubjectSelect2" onchange="populateChapterSelect()"></select>
+          <select id="syllabusChapterSelect"></select>
+          <input id="subtopicInput" placeholder="New subtopic">
+          <button onclick="addSubtopic()">Add</button>
         </div>
-      </section>
+      </div>
 
-      <!-- SYLLABUS (ORIGINAL VERSION) -->
-      <section id="syllabus" class="view">
-        <h2>Syllabus</h2>
+      <div id="syllabusContainer"></div>
+    </section>
 
-        <div class="card syllabus-editor">
-          <h3>Add to Syllabus</h3>
-
-          <div class="row">
-            <input id="syllabusSubjectInput" placeholder="New subject">
-            <button onclick="addSyllabusSubject()">Add Subject</button>
-          </div>
-
-          <div class="row">
-            <select id="syllabusSubjectSelect"></select>
-            <input id="chapterInput" placeholder="New chapter">
-            <button onclick="addChapter()">Add Chapter</button>
-          </div>
-
-          <div class="row">
-            <select id="syllabusSubjectSelect2" onchange="populateChapterSelect()"></select>
-            <select id="syllabusChapterSelect"></select>
-            <input id="subtopicInput" placeholder="New subtopic">
-            <button onclick="addSubtopic()">Add</button>
-          </div>
-        </div>
-
-        <div id="syllabusContainer"></div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div>StudySync · Made by Avishi & Anmol</div>
-    <div>
-      This is an open source on
-      <a href="https://github.com/avishi-learns/Study-Sync" target="_blank">GitHub</a>
-    </div>
-  </footer>
-
+  </main>
 </div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>StudySync · Made by Avishi & Anmol</div>
+  <div>
+    This is an open source on
+    <a href="https://github.com/avishi-learns/studysync" target="_blank">GitHub</a>
+  </div>
+</footer>
 
 <script src="script.js"></script>
 </body>
