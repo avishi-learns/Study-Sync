@@ -1,177 +1,204 @@
-document.addEventListener("DOMContentLoaded", () => {
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #111827;
+  --primary: #5b6cff;
+  --border: #e5e7eb;
+  --radius: 14px;
+  --muted: #6b7280;
+}
 
-  let subjects = [];
-  let selectedSubjectId = null;
+.dark {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #e5e7eb;
+}
 
-  /* ---------------- NAV ---------------- */
-  document.querySelectorAll(".nav-link").forEach(link => {
-    link.addEventListener("click", () => {
-      showView(link.dataset.section);
-    });
-  });
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
 
-  function showView(id) {
-    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
 
-    document.querySelectorAll(".nav-link").forEach(l =>
-      l.classList.toggle("active", l.dataset.section === id)
-    );
+.app {
+  display: flex;
+  min-height: calc(100vh - 60px);
+}
 
-    if (id === "planner") renderTodayTasks();
-  }
+/* SIDEBAR */
+.sidebar {
+  width: 260px;
+  background: var(--card);
+  padding: 28px;
+  border-right: 1px solid var(--border);
+}
 
-  /* ---------------- SUBJECTS ---------------- */
-  window.addSubject = function () {
-    const input = document.getElementById("subjectInput");
-    if (!input.value.trim()) return;
+.brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  margin-bottom: 40px;
+}
 
-    subjects.push({
-      id: Date.now(),
-      name: input.value.trim(),
-      tasks: []
-    });
+.sidebar nav a {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text);
+  cursor: pointer;
+}
 
-    input.value = "";
-    renderSubjects();
-  };
+.sidebar nav a.active {
+  background: var(--primary);
+  color: white;
+}
 
-  window.selectSubject = function (id) {
-    selectedSubjectId = id;
-    renderSubjects();
-    renderTasks();
-  };
+/* MAIN */
+.content {
+  flex: 1;
+  padding: 40px;
+}
 
-  function renderSubjects() {
-    const c = document.getElementById("subjectsContainer");
-    c.innerHTML = "";
+.view { display: none; }
+.view.active { display: block; }
 
-    subjects.forEach(s => {
-      const done = s.tasks.filter(t => t.done).length;
-      const total = s.tasks.length || 1;
-      const percent = Math.round((done / total) * 100);
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
 
-      c.innerHTML += `
-        <div class="card ${selectedSubjectId === s.id ? "active-subject" : ""}">
-          <h3>${s.name}</h3>
-          <p>${done}/${total}</p>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width:${percent}%"></div>
-          </div>
-          <button onclick="selectSubject(${s.id})">Select</button>
-        </div>
-      `;
-    });
+/* CARD */
+.card {
+  background: var(--card);
+  padding: 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
 
-    updateOverallProgress();
-    renderTodayTasks();
-  }
+/* INPUTS */
+input, select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+}
 
-  /* ---------------- TASKS ---------------- */
-  window.addTask = function () {
-    if (selectedSubjectId === null) return;
+button {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+}
 
-    const input = document.getElementById("taskInput");
-    if (!input.value.trim()) return;
+/* TASKS */
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
 
-    const subject = subjects.find(s => s.id === selectedSubjectId);
-    subject.tasks.push({ text: input.value.trim(), done: false });
+.task-row span {
+  flex: 1;
+}
 
-    input.value = "";
-    renderTasks();
-    renderSubjects();
-  };
+.task-done {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
 
-  function renderTasks() {
-    const section = document.getElementById("taskSection");
-    const list = document.getElementById("taskList");
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 16px;
+  cursor: pointer;
+}
 
-    if (selectedSubjectId === null) {
-      section.style.display = "none";
-      return;
-    }
+/* PROGRESS BAR */
+.progress-bar {
+  height: 14px;
+  background: #eaeaf5;
+  border-radius: 20px;
+  margin: 12px 0;
+}
 
-    section.style.display = "block";
-    list.innerHTML = "";
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #5b6cff, #7c8cff);
+  border-radius: 20px;
+}
 
-    const subject = subjects.find(s => s.id === selectedSubjectId);
+/* PLANNER */
+.planner-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
 
-    subject.tasks.forEach((t, i) => {
-      list.innerHTML += `
-        <div class="task">
-          <input type="checkbox" ${t.done ? "checked" : ""}
-            onchange="toggleTask(${i})">
-          <span>${t.text}</span>
-        </div>
-      `;
-    });
-  }
+.planner-card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
 
-  window.toggleTask = function (i) {
-    const subject = subjects.find(s => s.id === selectedSubjectId);
-    subject.tasks[i].done = !subject.tasks[i].done;
+.planner-card h3 {
+  color: var(--primary);
+}
 
-    renderTasks();
-    renderSubjects();
-  };
+/* SYLLABUS */
+.syllabus-editor .row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
 
-  /* ---------------- PLANNER ---------------- */
-  function renderTodayTasks() {
-    const container = document.getElementById("todayTasks");
-    container.innerHTML = "";
+.syllabus-subject {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 20px;
+}
 
-    let hasTasks = false;
+.syllabus-chapter {
+  margin-left: 20px;
+  margin-top: 8px;
+}
 
-    subjects.forEach(subject => {
-      subject.tasks.forEach(task => {
-        if (!task.done) {
-          hasTasks = true;
-          container.innerHTML += `
-            <div class="task">
-              <input type="checkbox"
-                onchange="markFromPlanner(${subject.id}, '${task.text}')">
-              <strong>${subject.name}:</strong> ${task.text}
-            </div>
-          `;
-        }
-      });
-    });
+.syllabus-subtopic {
+  margin-left: 40px;
+  display: flex;
+  gap: 10px;
+}
 
-    if (!hasTasks) {
-      container.innerHTML = "<p>🎉 No pending tasks for today!</p>";
-    }
-  }
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 14px 0;
+  font-size: 14px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
 
-  window.markFromPlanner = function (subjectId, taskText) {
-    const subject = subjects.find(s => s.id === subjectId);
-    const task = subject.tasks.find(t => t.text === taskText);
-    task.done = true;
+.footer a {
+  color: var(--primary);
+  text-decoration: none;
+}
 
-    renderSubjects();
-    renderTasks();
-    renderTodayTasks();
-  };
-
-  /* ---------------- PROGRESS ---------------- */
-  function updateOverallProgress() {
-    let done = 0, total = 0;
-
-    subjects.forEach(s => {
-      done += s.tasks.filter(t => t.done).length;
-      total += s.tasks.length;
-    });
-
-    const p = total === 0 ? 0 : Math.round((done / total) * 100);
-    document.getElementById("overallProgress").style.width = p + "%";
-    document.getElementById("overallText").textContent = p + "%";
-  }
-
-  /* ---------------- DARK MODE ---------------- */
-  document.getElementById("themeToggle").addEventListener("click", () => {
-    document.body.classList.toggle("dark");
-  });
-
-  /* ---------------- INITIAL ---------------- */
-  renderTodayTasks();
-
-});
+.footer a:hover {
+  text-decoration: underline;
+}
