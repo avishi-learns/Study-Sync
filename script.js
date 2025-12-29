@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ===== THEME ===== */
   if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark");
   }
@@ -11,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.classList.contains("dark") ? "dark" : "light");
   };
 
-  /* ===== NAV ===== */
   window.showView = id => {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     document.getElementById(id).classList.add("active");
@@ -25,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
     l.onclick = () => showView(l.dataset.section)
   );
 
-  /* ===== DASHBOARD ===== */
   let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
   let selectedSubjectId = JSON.parse(localStorage.getItem("selectedSubject"));
 
@@ -140,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ===== SYLLABUS ===== */
   let syllabus = JSON.parse(localStorage.getItem("syllabus")) || [];
 
   function saveSyllabus() {
@@ -222,3 +218,4 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSyllabus();
   populateSubjects();
 });
+
