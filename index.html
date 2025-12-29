@@ -4,60 +4,69 @@
   <meta charset="UTF-8" />
   <title>StudySync</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 <div class="app-wrapper">
 
-  <!-- APP -->
   <div class="app">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <h1 class="brand">StudySync</h1>
       <nav>
-        <a class="nav-link active" data-view="dashboard">📊 Dashboard</a>
-        <a class="nav-link" data-view="planner">🗓️ Planner</a>
-        <a class="nav-link" data-view="progress">📈 Progress</a>
-        <a class="nav-link" data-view="syllabus">📘 Syllabus</a>
+        <a class="nav-link active" data-section="dashboard">📊 Dashboard</a>
+        <a class="nav-link" data-section="planner">🗓️ Planner</a>
+        <a class="nav-link" data-section="progress">📈 Progress</a>
+        <a class="nav-link" data-section="syllabus">📘 Syllabus</a>
       </nav>
     </aside>
 
     <!-- MAIN -->
     <main class="content">
 
-      <!-- HEADER -->
+      <!-- TOP BAR -->
       <div class="top-bar">
         <div class="tabs">
-          <button data-view="dashboard">Dashboard</button>
-          <button data-view="planner">Planner</button>
-          <button data-view="progress">Progress</button>
+          <button onclick="showView('dashboard')">Dashboard</button>
+          <button onclick="showView('planner')">Planner</button>
+          <button onclick="showView('progress')">Progress</button>
         </div>
         <button id="themeToggle">🌙 Dark Mode</button>
       </div>
 
       <!-- DASHBOARD -->
       <section id="dashboard" class="view active">
+
         <div class="card">
           <h3>Add Subject</h3>
           <input id="subjectInput" placeholder="e.g. Physics">
-          <button id="addSubjectBtn">Add</button>
+          <button onclick="addSubject()">Add</button>
         </div>
+
+        <div class="card" id="taskSection" style="display:none;">
+          <h3>Add Task</h3>
+          <input id="taskInput" placeholder="e.g. Laws of Motion">
+          <button onclick="addTask()">Add Task</button>
+          <div id="taskList"></div>
+        </div>
+
         <div id="subjectsContainer"></div>
+
       </section>
 
       <!-- PLANNER -->
       <section id="planner" class="view">
-        <h2>Today's Planner</h2>
+        <h2 class="planner-title">Today's Planner</h2>
         <div id="todayTasks" class="planner-container"></div>
       </section>
 
       <!-- PROGRESS -->
       <section id="progress" class="view">
+        <h2>Overall Progress</h2>
         <div class="card">
-          <h3>Overall Progress</h3>
           <div class="progress-bar">
             <div id="overallProgress" class="progress-fill"></div>
           </div>
@@ -65,19 +74,33 @@
         </div>
       </section>
 
-      <!-- SYLLABUS -->
+      <!-- SYLLABUS (ORIGINAL VERSION) -->
       <section id="syllabus" class="view">
+        <h2>Syllabus</h2>
 
-        <!-- AI SYLLABUS -->
-        <div class="card ai-syllabus">
-          <h3>✨ AI Syllabus Breakdown</h3>
-          <input id="aiInput" placeholder="e.g. Class 12 Physics – Mechanics">
-          <button onclick="generateSyllabus()">Generate</button>
+        <div class="card syllabus-editor">
+          <h3>Add to Syllabus</h3>
+
+          <div class="row">
+            <input id="syllabusSubjectInput" placeholder="New subject">
+            <button onclick="addSyllabusSubject()">Add Subject</button>
+          </div>
+
+          <div class="row">
+            <select id="syllabusSubjectSelect"></select>
+            <input id="chapterInput" placeholder="New chapter">
+            <button onclick="addChapter()">Add Chapter</button>
+          </div>
+
+          <div class="row">
+            <select id="syllabusSubjectSelect2" onchange="populateChapterSelect()"></select>
+            <select id="syllabusChapterSelect"></select>
+            <input id="subtopicInput" placeholder="New subtopic">
+            <button onclick="addSubtopic()">Add</button>
+          </div>
         </div>
 
-        <!-- SYLLABUS VIEW -->
         <div id="syllabusContainer"></div>
-
       </section>
 
     </main>
