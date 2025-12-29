@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>StudySync</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h1 class="brand">StudySync</h1>
+    <nav>
+      <a class="nav-link active" data-section="dashboard">Dashboard</a>
+      <a class="nav-link" data-section="planner">Planner</a>
+      <a class="nav-link" data-section="progress">Progress</a>
+      <a class="nav-link" data-section="syllabus">📘 Syllabus</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="content">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="tabs">
+        <button onclick="showView('dashboard')">Dashboard</button>
+        <button onclick="showView('planner')">Planner</button>
+        <button onclick="showView('progress')">Progress</button>
+      </div>
+      <button id="themeToggle">🌙 Dark Mode</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="view active">
+
+      <div class="card">
+        <h3>Add Subject</h3>
+        <input id="subjectInput" placeholder="e.g. Physics">
+        <button onclick="addSubject()">Add</button>
+      </div>
+
+      <div id="subjectsContainer"></div>
+
+      <!-- TASKS -->
+      <div class="card" id="taskSection" style="display:none;">
+        <h3>Add Task</h3>
+        <input id="taskInput" placeholder="e.g. Laws of Motion">
+        <button onclick="addTask()">Add Task</button>
+
+        <div id="taskList"></div>
+      </div>
+
+    </section>
+
+    <!-- PLANNER -->
+    <section id="planner" class="view">
+      <h2>Today's Planner</h2>
+      <div id="todayTasks"></div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section id="progress" class="view">
+      <h2>Progress Overview</h2>
+
+      <div class="card">
+        <h4>Overall Progress</h4>
+        <div class="progress-bar">
+          <div id="overallProgress" class="progress-fill"></div>
+        </div>
+        <span id="overallText">0%</span>
+      </div>
+    </section>
+
+    <!-- SYLLABUS -->
+    <section id="syllabus" class="view">
+      <h2>Syllabus</h2>
+      <p>Coming soon</p>
+    </section>
+
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
