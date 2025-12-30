@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ================= THEME ================= */
   const themeToggle = document.getElementById("themeToggle");
 
   if (localStorage.getItem("theme") === "dark") {
@@ -15,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   };
 
-  /* ================= NAV ================= */
   window.showView = id => {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     document.getElementById(id).classList.add("active");
@@ -31,18 +29,17 @@ document.addEventListener("DOMContentLoaded", () => {
     l.onclick = () => showView(l.dataset.section)
   );
 
-  /* ================= DASHBOARD ================= */
   let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
   let selectedSubjectId = JSON.parse(localStorage.getItem("selectedSubject"));
 
-  const saveDashboard = () => {
+  function saveDashboard() {
     localStorage.setItem("subjects", JSON.stringify(subjects));
     localStorage.setItem("selectedSubject", JSON.stringify(selectedSubjectId));
-  };
+  }
 
   window.addSubject = () => {
     if (!subjectInput.value.trim()) return;
-    subjects.push({ id: Date.now(), name: subjectInput.value, tasks: [] });
+    subjects.push({ id: Date.now(), name: subjectInput.value.trim(), tasks: [] });
     subjectInput.value = "";
     saveDashboard();
     renderSubjects();
@@ -58,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addTask = () => {
     if (!taskInput.value.trim() || !selectedSubjectId) return;
     subjects.find(s => s.id === selectedSubjectId)
-      .tasks.push({ text: taskInput.value, done: false });
+      .tasks.push({ text: taskInput.value.trim(), done: false });
     taskInput.value = "";
     saveDashboard();
     renderTasks();
@@ -76,12 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.deleteTask = i => {
     const s = subjects.find(s => s.id === selectedSubjectId);
     s.tasks.splice(i, 1);
-
-    if (s.tasks.length === 0) {
-      subjects = subjects.filter(x => x.id !== s.id);
-      selectedSubjectId = null;
-    }
-
     saveDashboard();
     renderTasks();
     renderSubjects();
@@ -171,40 +162,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ================= SYLLABUS ================= */
   let syllabus = JSON.parse(localStorage.getItem("syllabus")) || [];
 
-  const saveSyllabus = () => {
+  function saveSyllabus() {
     localStorage.setItem("syllabus", JSON.stringify(syllabus));
-  };
-
-  const populateSyllabusSelects = () => {
-    syllabusSubjectSelect.innerHTML = "";
-    syllabusSubjectSelect2.innerHTML = "";
-    syllabus.forEach(s => {
-      syllabusSubjectSelect.innerHTML += `<option>${s.subject}</option>`;
-      syllabusSubjectSelect2.innerHTML += `<option>${s.subject}</option>`;
-    });
-    populateChapterSelect();
-  };
+  }
 
   window.addSyllabusSubject = () => {
     if (!syllabusSubjectInput.value.trim()) return;
-    syllabus.push({ subject: syllabusSubjectInput.value, chapters: [] });
+    syllabus.push({ subject: syllabusSubjectInput.value.trim(), chapters: [] });
     syllabusSubjectInput.value = "";
     saveSyllabus();
-    populateSyllabusSelects();
     renderSyllabus();
+    populateSubjects();
   };
 
   window.addChapter = () => {
     const s = syllabus.find(x => x.subject === syllabusSubjectSelect.value);
     if (!s || !chapterInput.value.trim()) return;
-    s.chapters.push({ name: chapterInput.value, subtopics: [] });
+    s.chapters.push({ name: chapterInput.value.trim(), subtopics: [] });
     chapterInput.value = "";
     saveSyllabus();
-    populateSyllabusSelects();
     renderSyllabus();
+    populateSubjects();
   };
 
   window.addSubtopic = () => {
@@ -213,11 +193,49 @@ document.addEventListener("DOMContentLoaded", () => {
     const c = s.chapters.find(x => x.name === syllabusChapterSelect.value);
     if (!c || !subtopicInput.value.trim()) return;
 
-    c.subtopics.push({ text: subtopicInput.value, done: false });
+    c.subtopics.push({ text: subtopicInput.value.trim(), done: false });
     subtopicInput.value = "";
     saveSyllabus();
     renderSyllabus();
   };
+
+  window.toggleSubtopic = (si, ci, ti) => {
+    syllabus[si].chapters[ci].subtopics[ti].done =
+      !syllabus[si].chapters[ci].subtopics[ti].done;
+    saveSyllabus();
+    renderSyllabus();
+  };
+
+  window.deleteSubtopic = (si, ci, ti) => {
+    syllabus[si].chapters[ci].subtopics.splice(ti, 1);
+    saveSyllabus();
+    renderSyllabus();
+  };
+
+  window.deleteChapter = (si, ci) => {
+    if (!confirm("Delete this chapter?")) return;
+    syllabus[si].chapters.splice(ci, 1);
+    saveSyllabus();
+    renderSyllabus();
+  };
+
+  window.deleteSyllabusSubject = si => {
+    if (!confirm("Delete this subject?")) return;
+    syllabus.splice(si, 1);
+    saveSyllabus();
+    renderSyllabus();
+    populateSubjects();
+  };
+
+  function populateSubjects() {
+    syllabusSubjectSelect.innerHTML = "";
+    syllabusSubjectSelect2.innerHTML = "";
+    syllabus.forEach(s => {
+      syllabusSubjectSelect.innerHTML += `<option>${s.subject}</option>`;
+      syllabusSubjectSelect2.innerHTML += `<option>${s.subject}</option>`;
+    });
+    populateChapterSelect();
+  }
 
   window.populateChapterSelect = () => {
     syllabusChapterSelect.innerHTML = "";
@@ -228,45 +246,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   };
 
-  window.toggleSubtopic = (si, ci, ti) => {
-    syllabus[si].chapters[ci].subtopics[ti].done ^= 1;
-    saveSyllabus();
-    renderSyllabus();
-  };
-
-  window.deleteSubtopic = (si, ci, ti) => {
-    syllabus[si].chapters[ci].subtopics.splice(ti, 1);
-
-    if (syllabus[si].chapters[ci].subtopics.length === 0) {
-      syllabus[si].chapters.splice(ci, 1);
-    }
-    if (syllabus[si].chapters.length === 0) {
-      syllabus.splice(si, 1);
-    }
-
-    saveSyllabus();
-    populateSyllabusSelects();
-    renderSyllabus();
-  };
-
-  window.deleteChapter = (si, ci) => {
-    syllabus[si].chapters.splice(ci, 1);
-    if (syllabus[si].chapters.length === 0) {
-      syllabus.splice(si, 1);
-    }
-    saveSyllabus();
-    populateSyllabusSelects();
-    renderSyllabus();
-  };
-
-  window.deleteSyllabusSubject = si => {
-    if (!confirm("Delete this subject?")) return;
-    syllabus.splice(si, 1);
-    saveSyllabus();
-    populateSyllabusSelects();
-    renderSyllabus();
-  };
-
   function renderSyllabus() {
     syllabusContainer.innerHTML = "";
 
@@ -275,16 +254,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="syllabus-subject">
           ${s.subject}
           <button class="delete-btn" onclick="deleteSyllabusSubject(${si})">✖</button>
-        </div>
-      `;
+        </div>`;
 
       s.chapters.forEach((c, ci) => {
         syllabusContainer.innerHTML += `
           <div class="syllabus-chapter">
             • ${c.name}
             <button class="delete-btn" onclick="deleteChapter(${si},${ci})">✖</button>
-          </div>
-        `;
+          </div>`;
 
         c.subtopics.forEach((t, ti) => {
           syllabusContainer.innerHTML += `
@@ -293,16 +270,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 onchange="toggleSubtopic(${si},${ci},${ti})">
               ${t.text}
               <button class="delete-btn" onclick="deleteSubtopic(${si},${ci},${ti})">✖</button>
-            </div>
-          `;
+            </div>`;
         });
       });
     });
   }
 
-  /* ================= INIT ================= */
   renderSubjects();
   renderTasks();
   renderSyllabus();
-  populateSyllabusSelects();
+  populateSubjects();
 });
