@@ -30,7 +30,6 @@ body {
   min-height: calc(100vh - 60px);
 }
 
-/* SIDEBAR */
 .sidebar {
   width: 260px;
   background: var(--card);
@@ -60,7 +59,6 @@ body {
   color: white;
 }
 
-/* MAIN */
 .content {
   flex: 1;
   padding: 40px;
@@ -75,7 +73,6 @@ body {
   margin-bottom: 30px;
 }
 
-/* CARD */
 .card {
   background: var(--card);
   padding: 24px;
@@ -84,7 +81,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* INPUTS */
 input, select {
   padding: 10px;
   border-radius: 8px;
@@ -102,7 +98,6 @@ button {
   cursor: pointer;
 }
 
-/* TASKS */
 .task-row {
   display: flex;
   align-items: center;
@@ -127,7 +122,6 @@ button {
   cursor: pointer;
 }
 
-/* PROGRESS */
 .progress-bar {
   height: 14px;
   background: #eaeaf5;
@@ -142,7 +136,6 @@ button {
   border-radius: 20px;
 }
 
-/* PLANNER */
 .planner-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -160,7 +153,6 @@ button {
   color: var(--primary);
 }
 
-/* SYLLABUS */
 .syllabus-editor .row {
   display: flex;
   gap: 12px;
