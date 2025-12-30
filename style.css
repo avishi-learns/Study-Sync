@@ -27,10 +27,9 @@ body {
 
 .app {
   display: flex;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 70px);
 }
 
-/* SIDEBAR */
 .sidebar {
   width: 260px;
   background: var(--card);
@@ -50,8 +49,6 @@ body {
   padding: 12px 16px;
   margin-bottom: 6px;
   border-radius: 12px;
-  text-decoration: none;
-  color: var(--text);
   cursor: pointer;
 }
 
@@ -60,7 +57,6 @@ body {
   color: white;
 }
 
-/* MAIN */
 .content {
   flex: 1;
   padding: 40px;
@@ -75,7 +71,6 @@ body {
   margin-bottom: 30px;
 }
 
-/* CARD */
 .card {
   background: var(--card);
   padding: 24px;
@@ -84,13 +79,10 @@ body {
   margin-bottom: 20px;
 }
 
-/* INPUTS */
 input, select {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text);
 }
 
 button {
@@ -102,50 +94,30 @@ button {
   cursor: pointer;
 }
 
-/* TASKS */
 .task-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-top: 8px;
-}
-
-.task-row span {
-  flex: 1;
-}
-
-.task-done {
-  text-decoration: line-through;
-  opacity: 0.6;
 }
 
 .delete-btn {
   background: transparent;
-  border: none;
   color: #ef4444;
-  font-size: 16px;
-  cursor: pointer;
 }
 
-/* PROGRESS BAR */
 .progress-bar {
   height: 14px;
   background: #eaeaf5;
   border-radius: 20px;
-  margin: 12px 0;
 }
 
 .progress-fill {
   height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #5b6cff, #7c8cff);
-  border-radius: 20px;
+  background: linear-gradient(90deg,#5b6cff,#7c8cff);
 }
 
-/* PLANNER */
 .planner-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
 }
 
@@ -153,14 +125,8 @@ button {
   background: var(--card);
   padding: 20px;
   border-radius: 16px;
-  border: 1px solid var(--border);
 }
 
-.planner-card h3 {
-  color: var(--primary);
-}
-
-/* SYLLABUS */
 .syllabus-editor .row {
   display: flex;
   gap: 12px;
@@ -168,54 +134,24 @@ button {
 }
 
 .syllabus-subject {
-  font-size: 18px;
   font-weight: 600;
   margin-top: 20px;
 }
 
-.syllabus-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .syllabus-chapter {
   margin-left: 20px;
-  margin-top: 8px;
 }
 
 .syllabus-subtopic {
   margin-left: 40px;
+  display: flex;
+  gap: 10px;
 }
 
-.syllabus-delete {
-  background: none;
-  border: none;
-  color: #ef4444;
-  font-size: 14px;
-  cursor: pointer;
-  opacity: 0;
-}
-
-.syllabus-row:hover .syllabus-delete {
-  opacity: 1;
-}
-
-/* FOOTER */
 .footer {
   text-align: center;
   padding: 14px 0;
   font-size: 14px;
   color: var(--muted);
   border-top: 1px solid var(--border);
-  background: var(--bg);
-}
-
-.footer a {
-  color: var(--primary);
-  text-decoration: none;
-}
-
-.footer a:hover {
-  text-decoration: underline;
 }
