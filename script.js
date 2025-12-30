@@ -6,10 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   themeToggle.onclick = () => {
     document.body.classList.toggle("dark");
-    localStorage.setItem("theme",
-      document.body.classList.contains("dark") ? "dark" : "light");
+    localStorage.setItem(
+      "theme",
+      document.body.classList.contains("dark") ? "dark" : "light"
+    );
   };
-
 
   window.showView = id => {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
@@ -138,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+
   let syllabus = JSON.parse(localStorage.getItem("syllabus")) || [];
 
   function saveSyllabus() {
@@ -174,7 +176,19 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.toggleSubtopic = (si,ci,ti) => {
-    syllabus[si].chapters[ci].subtopics[ti].done^=1;
+    syllabus[si].chapters[ci].subtopics[ti].done ^= 1;
+    saveSyllabus();
+    renderSyllabus();
+  };
+
+  window.deleteChapter = (si,ci) => {
+    syllabus[si].chapters.splice(ci,1);
+    saveSyllabus();
+    renderSyllabus();
+  };
+
+  window.deleteSubtopic = (si,ci,ti) => {
+    syllabus[si].chapters[ci].subtopics.splice(ti,1);
     saveSyllabus();
     renderSyllabus();
   };
@@ -193,21 +207,31 @@ document.addEventListener("DOMContentLoaded", () => {
     syllabusChapterSelect.innerHTML="";
     const s = syllabus.find(x=>x.subject===syllabusSubjectSelect2.value);
     if (!s) return;
-    s.chapters.forEach(c=>syllabusChapterSelect.innerHTML+=`<option>${c.name}</option>`);
+    s.chapters.forEach(c =>
+      syllabusChapterSelect.innerHTML+=`<option>${c.name}</option>`
+    );
   };
 
   function renderSyllabus() {
     syllabusContainer.innerHTML="";
     syllabus.forEach((s,si)=>{
-      syllabusContainer.innerHTML+=`<div class="syllabus-subject">${s.subject}</div>`;
+      syllabusContainer.innerHTML+=`
+        <div class="syllabus-subject">${s.subject}</div>`;
       s.chapters.forEach((c,ci)=>{
-        syllabusContainer.innerHTML+=`<div class="syllabus-chapter">• ${c.name}</div>`;
+        syllabusContainer.innerHTML+=`
+          <div class="syllabus-row syllabus-chapter">
+            • ${c.name}
+            <button class="syllabus-delete"
+              onclick="deleteChapter(${si},${ci})">✖</button>
+          </div>`;
         c.subtopics.forEach((t,ti)=>{
           syllabusContainer.innerHTML+=`
-            <div class="syllabus-subtopic">
+            <div class="syllabus-row syllabus-subtopic">
               <input type="checkbox" ${t.done?"checked":""}
                 onchange="toggleSubtopic(${si},${ci},${ti})">
               ${t.text}
+              <button class="syllabus-delete"
+                onclick="deleteSubtopic(${si},${ci},${ti})">✖</button>
             </div>`;
         });
       });
