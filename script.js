@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* =========================
-     THEME (PERSISTENT)
-  ========================== */
+  /* ================= THEME ================= */
   const themeToggle = document.getElementById("themeToggle");
 
   if (localStorage.getItem("theme") === "dark") {
@@ -17,10 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   };
 
-  /* =========================
-     NAVIGATION
-  ========================== */
-  window.showView = (id) => {
+  /* ================= NAV ================= */
+  window.showView = id => {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     document.getElementById(id).classList.add("active");
 
@@ -31,40 +27,28 @@ document.addEventListener("DOMContentLoaded", () => {
     if (id === "planner") renderPlanner();
   };
 
-  document.querySelectorAll(".nav-link").forEach(link => {
-    link.onclick = () => showView(link.dataset.section);
-  });
+  document.querySelectorAll(".nav-link").forEach(l =>
+    l.onclick = () => showView(l.dataset.section)
+  );
 
-  /* =========================
-     DASHBOARD STATE
-  ========================== */
+  /* ================= DASHBOARD ================= */
   let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
   let selectedSubjectId = JSON.parse(localStorage.getItem("selectedSubject"));
 
-  function saveDashboard() {
+  const saveDashboard = () => {
     localStorage.setItem("subjects", JSON.stringify(subjects));
     localStorage.setItem("selectedSubject", JSON.stringify(selectedSubjectId));
-  }
+  };
 
-  /* =========================
-     DASHBOARD LOGIC
-  ========================== */
   window.addSubject = () => {
-    const input = document.getElementById("subjectInput");
-    if (!input.value.trim()) return;
-
-    subjects.push({
-      id: Date.now(),
-      name: input.value.trim(),
-      tasks: []
-    });
-
-    input.value = "";
+    if (!subjectInput.value.trim()) return;
+    subjects.push({ id: Date.now(), name: subjectInput.value, tasks: [] });
+    subjectInput.value = "";
     saveDashboard();
     renderSubjects();
   };
 
-  window.selectSubject = (id) => {
+  window.selectSubject = id => {
     selectedSubjectId = id;
     saveDashboard();
     renderSubjects();
@@ -72,34 +56,29 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.addTask = () => {
-    const input = document.getElementById("taskInput");
-    if (!input.value.trim() || !selectedSubjectId) return;
-
-    const subject = subjects.find(s => s.id === selectedSubjectId);
-    subject.tasks.push({ text: input.value.trim(), done: false });
-
-    input.value = "";
+    if (!taskInput.value.trim() || !selectedSubjectId) return;
+    subjects.find(s => s.id === selectedSubjectId)
+      .tasks.push({ text: taskInput.value, done: false });
+    taskInput.value = "";
     saveDashboard();
     renderTasks();
     renderSubjects();
   };
 
-  window.toggleTask = (index) => {
-    const subject = subjects.find(s => s.id === selectedSubjectId);
-    subject.tasks[index].done = !subject.tasks[index].done;
-
+  window.toggleTask = i => {
+    const s = subjects.find(s => s.id === selectedSubjectId);
+    s.tasks[i].done = !s.tasks[i].done;
     saveDashboard();
     renderTasks();
     renderSubjects();
   };
 
-  window.deleteTask = (index) => {
-    const subject = subjects.find(s => s.id === selectedSubjectId);
-    subject.tasks.splice(index, 1);
+  window.deleteTask = i => {
+    const s = subjects.find(s => s.id === selectedSubjectId);
+    s.tasks.splice(i, 1);
 
-    // auto-remove empty subject
-    if (subject.tasks.length === 0) {
-      subjects = subjects.filter(s => s.id !== subject.id);
+    if (s.tasks.length === 0) {
+      subjects = subjects.filter(x => x.id !== s.id);
       selectedSubjectId = null;
     }
 
@@ -108,150 +87,145 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSubjects();
   };
 
-  function renderSubjects() {
-    const container = document.getElementById("subjectsContainer");
-    container.innerHTML = "";
+  window.deleteSubject = id => {
+    if (!confirm("Delete this subject?")) return;
+    subjects = subjects.filter(s => s.id !== id);
+    if (selectedSubjectId === id) selectedSubjectId = null;
+    saveDashboard();
+    renderSubjects();
+    renderTasks();
+  };
 
+  function renderSubjects() {
+    subjectsContainer.innerHTML = "";
     subjects.forEach(s => {
       const done = s.tasks.filter(t => t.done).length;
       const total = s.tasks.length || 1;
 
-      container.innerHTML += `
+      subjectsContainer.innerHTML += `
         <div class="card">
           <h3>${s.name}</h3>
           <div class="progress-bar">
-            <div class="progress-fill" style="width:${(done / total) * 100}%"></div>
+            <div class="progress-fill" style="width:${(done/total)*100}%"></div>
           </div>
           <p>${done}/${s.tasks.length}</p>
-          <button onclick="selectSubject(${s.id})">Select</button>
-        </div>
-      `;
+          <div style="display:flex; gap:10px;">
+            <button onclick="selectSubject(${s.id})">Select</button>
+            <button class="delete-btn" onclick="deleteSubject(${s.id})">✖</button>
+          </div>
+        </div>`;
     });
-
-    updateOverallProgress();
+    updateOverall();
   }
 
   function renderTasks() {
-    const section = document.getElementById("taskSection");
-    const list = document.getElementById("taskList");
-
     if (!selectedSubjectId) {
-      section.style.display = "none";
+      taskSection.style.display = "none";
       return;
     }
 
-    section.style.display = "block";
-    list.innerHTML = "";
+    taskSection.style.display = "block";
+    taskList.innerHTML = "";
+    const s = subjects.find(s => s.id === selectedSubjectId);
 
-    const subject = subjects.find(s => s.id === selectedSubjectId);
-
-    subject.tasks.forEach((t, i) => {
-      list.innerHTML += `
+    s.tasks.forEach((t, i) => {
+      taskList.innerHTML += `
         <div class="task-row">
-          <input type="checkbox" ${t.done ? "checked" : ""} onchange="toggleTask(${i})">
+          <input type="checkbox" ${t.done ? "checked" : ""}
+            onchange="toggleTask(${i})">
           <span class="${t.done ? "task-done" : ""}">${t.text}</span>
           <button class="delete-btn" onclick="deleteTask(${i})">✖</button>
-        </div>
-      `;
+        </div>`;
     });
   }
 
-  function updateOverallProgress() {
-    let done = 0, total = 0;
-
+  function updateOverall() {
+    let d = 0, t = 0;
     subjects.forEach(s => {
-      done += s.tasks.filter(t => t.done).length;
-      total += s.tasks.length;
+      d += s.tasks.filter(x => x.done).length;
+      t += s.tasks.length;
     });
-
-    const percent = total ? Math.round((done / total) * 100) : 0;
-    document.getElementById("overallProgress").style.width = percent + "%";
-    document.getElementById("overallText").textContent = percent + "%";
+    const p = t ? Math.round(d / t * 100) : 0;
+    overallProgress.style.width = p + "%";
+    overallText.textContent = p + "%";
   }
 
-  /* =========================
-     PLANNER
-  ========================== */
   function renderPlanner() {
-    const container = document.getElementById("todayTasks");
-    container.innerHTML = "";
+    todayTasks.innerHTML = "";
+    const grouped = {};
 
-    subjects.forEach(s => {
-      const pending = s.tasks.filter(t => !t.done);
-      if (!pending.length) return;
+    subjects.forEach(s =>
+      s.tasks.filter(t => !t.done).forEach(t => {
+        grouped[s.name] = grouped[s.name] || [];
+        grouped[s.name].push(t.text);
+      })
+    );
 
-      const card = document.createElement("div");
-      card.className = "planner-card";
-      card.innerHTML =
-        `<h3>${s.name}</h3>` +
-        pending.map(t => `<div>☐ ${t.text}</div>`).join("");
-
-      container.appendChild(card);
+    Object.keys(grouped).forEach(name => {
+      const div = document.createElement("div");
+      div.className = "planner-card";
+      div.innerHTML =
+        `<h3>${name}</h3>` +
+        grouped[name].map(t => `<div>☐ ${t}</div>`).join("");
+      todayTasks.appendChild(div);
     });
   }
 
-  /* =========================
-     SYLLABUS STATE
-  ========================== */
+  /* ================= SYLLABUS ================= */
   let syllabus = JSON.parse(localStorage.getItem("syllabus")) || [];
 
-  function saveSyllabus() {
+  const saveSyllabus = () => {
     localStorage.setItem("syllabus", JSON.stringify(syllabus));
-  }
+  };
 
-  /* =========================
-     SYLLABUS LOGIC
-  ========================== */
-  window.addSyllabusSubject = () => {
-    const input = document.getElementById("syllabusSubjectInput");
-    if (!input.value.trim()) return;
-
-    syllabus.push({
-      subject: input.value.trim(),
-      chapters: []
+  const populateSyllabusSelects = () => {
+    syllabusSubjectSelect.innerHTML = "";
+    syllabusSubjectSelect2.innerHTML = "";
+    syllabus.forEach(s => {
+      syllabusSubjectSelect.innerHTML += `<option>${s.subject}</option>`;
+      syllabusSubjectSelect2.innerHTML += `<option>${s.subject}</option>`;
     });
+    populateChapterSelect();
+  };
 
-    input.value = "";
+  window.addSyllabusSubject = () => {
+    if (!syllabusSubjectInput.value.trim()) return;
+    syllabus.push({ subject: syllabusSubjectInput.value, chapters: [] });
+    syllabusSubjectInput.value = "";
     saveSyllabus();
-    renderSyllabus();
     populateSyllabusSelects();
+    renderSyllabus();
   };
 
   window.addChapter = () => {
-    const subjectName = document.getElementById("syllabusSubjectSelect").value;
-    const input = document.getElementById("chapterInput");
-    if (!subjectName || !input.value.trim()) return;
-
-    const subject = syllabus.find(s => s.subject === subjectName);
-    subject.chapters.push({
-      name: input.value.trim(),
-      subtopics: []
-    });
-
-    input.value = "";
+    const s = syllabus.find(x => x.subject === syllabusSubjectSelect.value);
+    if (!s || !chapterInput.value.trim()) return;
+    s.chapters.push({ name: chapterInput.value, subtopics: [] });
+    chapterInput.value = "";
     saveSyllabus();
-    renderSyllabus();
     populateSyllabusSelects();
+    renderSyllabus();
   };
 
   window.addSubtopic = () => {
-    const subjectName = document.getElementById("syllabusSubjectSelect2").value;
-    const chapterName = document.getElementById("syllabusChapterSelect").value;
-    const input = document.getElementById("subtopicInput");
+    const s = syllabus.find(x => x.subject === syllabusSubjectSelect2.value);
+    if (!s) return;
+    const c = s.chapters.find(x => x.name === syllabusChapterSelect.value);
+    if (!c || !subtopicInput.value.trim()) return;
 
-    if (!subjectName || !chapterName || !input.value.trim()) return;
-
-    const subject = syllabus.find(s => s.subject === subjectName);
-    const chapter = subject.chapters.find(c => c.name === chapterName);
-
-    chapter.subtopics.push({
-      text: input.value.trim(),
-      done: false
-    });
-
-    input.value = "";
+    c.subtopics.push({ text: subtopicInput.value, done: false });
+    subtopicInput.value = "";
     saveSyllabus();
     renderSyllabus();
+  };
+
+  window.populateChapterSelect = () => {
+    syllabusChapterSelect.innerHTML = "";
+    const s = syllabus.find(x => x.subject === syllabusSubjectSelect2.value);
+    if (!s) return;
+    s.chapters.forEach(c =>
+      syllabusChapterSelect.innerHTML += `<option>${c.name}</option>`
+    );
   };
 
   window.toggleSubtopic = (si, ci, ti) => {
@@ -260,200 +234,75 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSyllabus();
   };
 
-  function populateSyllabusSelects() {
-    const s1 = document.getElementById("syllabusSubjectSelect");
-    const s2 = document.getElementById("syllabusSubjectSelect2");
-    const c = document.getElementById("syllabusChapterSelect");
+  window.deleteSubtopic = (si, ci, ti) => {
+    syllabus[si].chapters[ci].subtopics.splice(ti, 1);
 
-    s1.innerHTML = "";
-    s2.innerHTML = "";
-    c.innerHTML = "";
+    if (syllabus[si].chapters[ci].subtopics.length === 0) {
+      syllabus[si].chapters.splice(ci, 1);
+    }
+    if (syllabus[si].chapters.length === 0) {
+      syllabus.splice(si, 1);
+    }
 
-    syllabus.forEach(s => {
-      s1.innerHTML += `<option>${s.subject}</option>`;
-      s2.innerHTML += `<option>${s.subject}</option>`;
-    });
+    saveSyllabus();
+    populateSyllabusSelects();
+    renderSyllabus();
+  };
 
-    populateChapterSelect();
-  }
+  window.deleteChapter = (si, ci) => {
+    syllabus[si].chapters.splice(ci, 1);
+    if (syllabus[si].chapters.length === 0) {
+      syllabus.splice(si, 1);
+    }
+    saveSyllabus();
+    populateSyllabusSelects();
+    renderSyllabus();
+  };
 
-  window.populateChapterSelect = () => {
-    const subjectName = document.getElementById("syllabusSubjectSelect2").value;
-    const chapterSelect = document.getElementById("syllabusChapterSelect");
-    chapterSelect.innerHTML = "";
-
-    const subject = syllabus.find(s => s.subject === subjectName);
-    if (!subject) return;
-
-    subject.chapters.forEach(c => {
-      chapterSelect.innerHTML += `<option>${c.name}</option>`;
-    });
+  window.deleteSyllabusSubject = si => {
+    if (!confirm("Delete this subject?")) return;
+    syllabus.splice(si, 1);
+    saveSyllabus();
+    populateSyllabusSelects();
+    renderSyllabus();
   };
 
   function renderSyllabus() {
-    const container = document.getElementById("syllabusContainer");
-    container.innerHTML = "";
-
-    syllabus = syllabus.filter(s =>
-      s.chapters.some(c => c.subtopics.length > 0)
-    );
+    syllabusContainer.innerHTML = "";
 
     syllabus.forEach((s, si) => {
-      container.innerHTML += `<div class="syllabus-subject">${s.subject}</div>`;
+      syllabusContainer.innerHTML += `
+        <div class="syllabus-subject">
+          ${s.subject}
+          <button class="delete-btn" onclick="deleteSyllabusSubject(${si})">✖</button>
+        </div>
+      `;
 
       s.chapters.forEach((c, ci) => {
-        if (!c.subtopics.length) return;
-
-        container.innerHTML += `<div class="syllabus-chapter">• ${c.name}</div>`;
+        syllabusContainer.innerHTML += `
+          <div class="syllabus-chapter">
+            • ${c.name}
+            <button class="delete-btn" onclick="deleteChapter(${si},${ci})">✖</button>
+          </div>
+        `;
 
         c.subtopics.forEach((t, ti) => {
-          container.innerHTML += `
+          syllabusContainer.innerHTML += `
             <div class="syllabus-subtopic">
               <input type="checkbox" ${t.done ? "checked" : ""}
                 onchange="toggleSubtopic(${si},${ci},${ti})">
               ${t.text}
+              <button class="delete-btn" onclick="deleteSubtopic(${si},${ci},${ti})">✖</button>
             </div>
           `;
         });
       });
     });
-
-    saveSyllabus();
-    populateSyllabusSelects();
   }
 
-  /* =========================
-     INITIAL RENDER
-  ========================== */
+  /* ================= INIT ================= */
   renderSubjects();
   renderTasks();
   renderSyllabus();
   populateSyllabusSelects();
 });
-
-/* =========================
-   SYLLABUS – GLOBAL FIX
-========================= */
-
-let syllabus = JSON.parse(localStorage.getItem("syllabus")) || [];
-
-function saveSyllabus() {
-  localStorage.setItem("syllabus", JSON.stringify(syllabus));
-}
-
-window.addSyllabusSubject = function () {
-  const input = document.getElementById("syllabusSubjectInput");
-  if (!input || !input.value.trim()) return;
-
-  syllabus.push({
-    subject: input.value.trim(),
-    chapters: []
-  });
-
-  input.value = "";
-  saveSyllabus();
-  renderSyllabus();
-  populateSubjects();
-};
-
-window.addChapter = function () {
-  const subjectName = document.getElementById("syllabusSubjectSelect").value;
-  const input = document.getElementById("chapterInput");
-  if (!subjectName || !input.value.trim()) return;
-
-  const subject = syllabus.find(s => s.subject === subjectName);
-  subject.chapters.push({ name: input.value.trim(), subtopics: [] });
-
-  input.value = "";
-  saveSyllabus();
-  renderSyllabus();
-  populateSubjects();
-};
-
-window.addSubtopic = function () {
-  const subjectName = document.getElementById("syllabusSubjectSelect2").value;
-  const chapterName = document.getElementById("syllabusChapterSelect").value;
-  const input = document.getElementById("subtopicInput");
-
-  if (!subjectName || !chapterName || !input.value.trim()) return;
-
-  const subject = syllabus.find(s => s.subject === subjectName);
-  const chapter = subject.chapters.find(c => c.name === chapterName);
-
-  chapter.subtopics.push({
-    text: input.value.trim(),
-    done: false
-  });
-
-  input.value = "";
-  saveSyllabus();
-  renderSyllabus();
-};
-
-window.toggleSubtopic = function (si, ci, ti) {
-  syllabus[si].chapters[ci].subtopics[ti].done ^= 1;
-  saveSyllabus();
-  renderSyllabus();
-};
-
-function populateSubjects() {
-  const s1 = document.getElementById("syllabusSubjectSelect");
-  const s2 = document.getElementById("syllabusSubjectSelect2");
-  const c = document.getElementById("syllabusChapterSelect");
-
-  s1.innerHTML = "";
-  s2.innerHTML = "";
-  c.innerHTML = "";
-
-  syllabus.forEach(s => {
-    s1.innerHTML += `<option>${s.subject}</option>`;
-    s2.innerHTML += `<option>${s.subject}</option>`;
-  });
-
-  populateChapterSelect();
-}
-
-window.populateChapterSelect = function () {
-  const subjectName = document.getElementById("syllabusSubjectSelect2").value;
-  const c = document.getElementById("syllabusChapterSelect");
-  c.innerHTML = "";
-
-  const subject = syllabus.find(s => s.subject === subjectName);
-  if (!subject) return;
-
-  subject.chapters.forEach(ch =>
-    c.innerHTML += `<option>${ch.name}</option>`
-  );
-};
-
-function renderSyllabus() {
-  const container = document.getElementById("syllabusContainer");
-  container.innerHTML = "";
-
-  // auto-remove empty subjects
-  syllabus = syllabus.filter(s =>
-    s.chapters.some(c => c.subtopics.length)
-  );
-
-  syllabus.forEach((s, si) => {
-    container.innerHTML += `<div class="syllabus-subject">${s.subject}</div>`;
-
-    s.chapters.forEach((c, ci) => {
-      if (!c.subtopics.length) return;
-
-      container.innerHTML += `<div class="syllabus-chapter">• ${c.name}</div>`;
-
-      c.subtopics.forEach((t, ti) => {
-        container.innerHTML += `
-          <div class="syllabus-subtopic">
-            <input type="checkbox" ${t.done ? "checked" : ""}
-              onchange="toggleSubtopic(${si},${ci},${ti})">
-            ${t.text}
-          </div>`;
-      });
-    });
-  });
-
-  saveSyllabus();
-  populateSubjects();
-}
