@@ -173,6 +173,12 @@ button {
   margin-top: 20px;
 }
 
+.syllabus-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .syllabus-chapter {
   margin-left: 20px;
   margin-top: 8px;
@@ -180,8 +186,19 @@ button {
 
 .syllabus-subtopic {
   margin-left: 40px;
-  display: flex;
-  gap: 10px;
+}
+
+.syllabus-delete {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.syllabus-row:hover .syllabus-delete {
+  opacity: 1;
 }
 
 /* FOOTER */
