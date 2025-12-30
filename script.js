@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+  /* THEME */
   if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark");
   }
@@ -12,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   };
 
+  /* NAVIGATION */
   window.showView = id => {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     document.getElementById(id).classList.add("active");
@@ -25,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     l.onclick = () => showView(l.dataset.section)
   );
 
+  /* DASHBOARD */
   let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
   let selectedSubjectId = JSON.parse(localStorage.getItem("selectedSubject"));
 
@@ -56,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveDashboard();
     renderTasks();
     renderSubjects();
+    renderPlanner();
   };
 
   window.toggleTask = i => {
@@ -64,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveDashboard();
     renderTasks();
     renderSubjects();
+    renderPlanner();
   };
 
   window.deleteTask = i => {
@@ -72,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveDashboard();
     renderTasks();
     renderSubjects();
+    renderPlanner();
   };
 
   function renderSubjects() {
@@ -122,13 +128,16 @@ document.addEventListener("DOMContentLoaded", () => {
     overallText.textContent=p+"%";
   }
 
+  /* PLANNER */
   function renderPlanner() {
     todayTasks.innerHTML="";
     const grouped = {};
-    subjects.forEach(s=>s.tasks.filter(t=>!t.done).forEach(t=>{
-      grouped[s.name] = grouped[s.name] || [];
-      grouped[s.name].push(t.text);
-    }));
+    subjects.forEach(s =>
+      s.tasks.filter(t=>!t.done).forEach(t=>{
+        grouped[s.name] = grouped[s.name] || [];
+        grouped[s.name].push(t.text);
+      })
+    );
 
     Object.keys(grouped).forEach(name=>{
       const div=document.createElement("div");
@@ -139,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-
+  /* SYLLABUS */
   let syllabus = JSON.parse(localStorage.getItem("syllabus")) || [];
 
   function saveSyllabus() {
@@ -181,16 +190,35 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSyllabus();
   };
 
-  window.deleteChapter = (si,ci) => {
-    syllabus[si].chapters.splice(ci,1);
+  window.deleteSubtopic = (si,ci,ti) => {
+    const subject = syllabus[si];
+    const chapter = subject.chapters[ci];
+
+    chapter.subtopics.splice(ti,1);
+
+    if (chapter.subtopics.length === 0) {
+      subject.chapters.splice(ci,1);
+    }
+    if (subject.chapters.length === 0) {
+      syllabus.splice(si,1);
+    }
+
     saveSyllabus();
     renderSyllabus();
+    populateSubjects();
   };
 
-  window.deleteSubtopic = (si,ci,ti) => {
-    syllabus[si].chapters[ci].subtopics.splice(ti,1);
+  window.deleteChapter = (si,ci) => {
+    const subject = syllabus[si];
+    subject.chapters.splice(ci,1);
+
+    if (subject.chapters.length === 0) {
+      syllabus.splice(si,1);
+    }
+
     saveSyllabus();
     renderSyllabus();
+    populateSubjects();
   };
 
   function populateSubjects() {
@@ -243,6 +271,4 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSyllabus();
   populateSubjects();
   renderPlanner();
-
 });
-
