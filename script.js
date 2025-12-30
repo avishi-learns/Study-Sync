@@ -7,13 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   themeToggle.onclick = () => {
     document.body.classList.toggle("dark");
-    localStorage.setItem(
-      "theme",
-      document.body.classList.contains("dark") ? "dark" : "light"
-    );
+    localStorage.setItem("theme",
+      document.body.classList.contains("dark") ? "dark" : "light");
   };
 
-  /* NAVIGATION */
   window.showView = id => {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     document.getElementById(id).classList.add("active");
@@ -29,11 +26,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* DASHBOARD */
   let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
-  let selectedSubjectId = JSON.parse(localStorage.getItem("selectedSubject"));
+  let selectedSubjectId = null;
 
   function saveDashboard() {
     localStorage.setItem("subjects", JSON.stringify(subjects));
-    localStorage.setItem("selectedSubject", JSON.stringify(selectedSubjectId));
   }
 
   window.addSubject = () => {
@@ -46,20 +42,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.selectSubject = id => {
     selectedSubjectId = id;
-    saveDashboard();
-    renderSubjects();
     renderTasks();
   };
 
   window.addTask = () => {
-    if (!taskInput.value.trim() || !selectedSubjectId) return;
+    if (!taskInput.value.trim()) return;
     subjects.find(s => s.id === selectedSubjectId)
       .tasks.push({ text: taskInput.value, done: false });
     taskInput.value = "";
     saveDashboard();
     renderTasks();
     renderSubjects();
-    renderPlanner();
   };
 
   window.toggleTask = i => {
@@ -68,16 +61,13 @@ document.addEventListener("DOMContentLoaded", () => {
     saveDashboard();
     renderTasks();
     renderSubjects();
-    renderPlanner();
   };
 
   window.deleteTask = i => {
-    const s = subjects.find(s => s.id === selectedSubjectId);
-    s.tasks.splice(i, 1);
+    subjects.find(s => s.id === selectedSubjectId).tasks.splice(i,1);
     saveDashboard();
     renderTasks();
     renderSubjects();
-    renderPlanner();
   };
 
   function renderSubjects() {
@@ -99,19 +89,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderTasks() {
-    if (!selectedSubjectId) {
-      taskSection.style.display = "none";
-      return;
-    }
+    if (!selectedSubjectId) return;
     taskSection.style.display = "block";
     taskList.innerHTML = "";
-    const s = subjects.find(s => s.id === selectedSubjectId);
-    s.tasks.forEach((t,i) =>
+    subjects.find(s => s.id === selectedSubjectId).tasks.forEach((t,i) =>
       taskList.innerHTML += `
         <div class="task-row">
           <input type="checkbox" ${t.done?"checked":""}
             onchange="toggleTask(${i})">
-          <span class="${t.done?"task-done":""}">${t.text}</span>
+          <span>${t.text}</span>
           <button class="delete-btn" onclick="deleteTask(${i})">✖</button>
         </div>`
     );
@@ -128,24 +114,13 @@ document.addEventListener("DOMContentLoaded", () => {
     overallText.textContent=p+"%";
   }
 
-  /* PLANNER */
   function renderPlanner() {
     todayTasks.innerHTML="";
-    const grouped = {};
     subjects.forEach(s =>
-      s.tasks.filter(t=>!t.done).forEach(t=>{
-        grouped[s.name] = grouped[s.name] || [];
-        grouped[s.name].push(t.text);
-      })
+      s.tasks.filter(t=>!t.done).forEach(t =>
+        todayTasks.innerHTML += `<div>${s.name}: ${t.text}</div>`
+      )
     );
-
-    Object.keys(grouped).forEach(name=>{
-      const div=document.createElement("div");
-      div.className="planner-card";
-      div.innerHTML=`<h3>${name}</h3>`+
-        grouped[name].map(t=>`<div>☐ ${t}</div>`).join("");
-      todayTasks.appendChild(div);
-    });
   }
 
   /* SYLLABUS */
@@ -155,75 +130,60 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("syllabus", JSON.stringify(syllabus));
   }
 
+  function cleanupSyllabus() {
+    syllabus = syllabus.filter(s =>
+      s.chapters.some(c => c.subtopics.length > 0)
+    );
+  }
+
   window.addSyllabusSubject = () => {
     if (!syllabusSubjectInput.value.trim()) return;
     syllabus.push({ subject: syllabusSubjectInput.value, chapters: [] });
     syllabusSubjectInput.value="";
     saveSyllabus();
     renderSyllabus();
-    populateSubjects();
   };
 
   window.addChapter = () => {
     const s = syllabus.find(x=>x.subject===syllabusSubjectSelect.value);
-    if (!chapterInput.value.trim()) return;
+    if (!s || !chapterInput.value.trim()) return;
     s.chapters.push({ name: chapterInput.value, subtopics: [] });
     chapterInput.value="";
     saveSyllabus();
     renderSyllabus();
-    populateSubjects();
   };
 
   window.addSubtopic = () => {
     const s = syllabus.find(x=>x.subject===syllabusSubjectSelect2.value);
+    if (!s) return;
     const c = s.chapters.find(x=>x.name===syllabusChapterSelect.value);
-    if (!subtopicInput.value.trim()) return;
+    if (!c || !subtopicInput.value.trim()) return;
     c.subtopics.push({ text: subtopicInput.value, done:false });
     subtopicInput.value="";
     saveSyllabus();
     renderSyllabus();
   };
 
-  window.toggleSubtopic = (si,ci,ti) => {
-    syllabus[si].chapters[ci].subtopics[ti].done ^= 1;
+  function renderSyllabus() {
+    cleanupSyllabus();
     saveSyllabus();
-    renderSyllabus();
-  };
-
-  window.deleteSubtopic = (si,ci,ti) => {
-    const subject = syllabus[si];
-    const chapter = subject.chapters[ci];
-
-    chapter.subtopics.splice(ti,1);
-
-    if (chapter.subtopics.length === 0) {
-      subject.chapters.splice(ci,1);
-    }
-    if (subject.chapters.length === 0) {
-      syllabus.splice(si,1);
-    }
-
-    saveSyllabus();
-    renderSyllabus();
+    syllabusContainer.innerHTML="";
+    syllabus.forEach(s=>{
+      syllabusContainer.innerHTML+=`<div class="syllabus-subject">${s.subject}</div>`;
+      s.chapters.forEach(c=>{
+        syllabusContainer.innerHTML+=`<div class="syllabus-chapter">• ${c.name}</div>`;
+        c.subtopics.forEach(t=>{
+          syllabusContainer.innerHTML+=`<div class="syllabus-subtopic">☐ ${t.text}</div>`;
+        });
+      });
+    });
     populateSubjects();
-  };
-
-  window.deleteChapter = (si,ci) => {
-    const subject = syllabus[si];
-    subject.chapters.splice(ci,1);
-
-    if (subject.chapters.length === 0) {
-      syllabus.splice(si,1);
-    }
-
-    saveSyllabus();
-    renderSyllabus();
-    populateSubjects();
-  };
+  }
 
   function populateSubjects() {
     syllabusSubjectSelect.innerHTML="";
     syllabusSubjectSelect2.innerHTML="";
+    syllabusChapterSelect.innerHTML="";
     syllabus.forEach(s=>{
       syllabusSubjectSelect.innerHTML+=`<option>${s.subject}</option>`;
       syllabusSubjectSelect2.innerHTML+=`<option>${s.subject}</option>`;
@@ -235,53 +195,9 @@ document.addEventListener("DOMContentLoaded", () => {
     syllabusChapterSelect.innerHTML="";
     const s = syllabus.find(x=>x.subject===syllabusSubjectSelect2.value);
     if (!s) return;
-    s.chapters.forEach(c =>
-      syllabusChapterSelect.innerHTML+=`<option>${c.name}</option>`
-    );
+    s.chapters.forEach(c=>syllabusChapterSelect.innerHTML+=`<option>${c.name}</option>`);
   };
-function renderSyllabus() {
-  syllabusContainer.innerHTML = "";
-
-  // 🔥 CLEANUP: remove empty subjects
-  syllabus = syllabus.filter(s => s.chapters.length > 0);
-
-  saveSyllabus();
-  populateSubjects();
-
-  syllabus.forEach((s, si) => {
-    syllabusContainer.innerHTML += `
-      <div class="syllabus-subject">${s.subject}</div>
-    `;
-
-    s.chapters.forEach((c, ci) => {
-      syllabusContainer.innerHTML += `
-        <div class="syllabus-row syllabus-chapter">
-          • ${c.name}
-          <button class="syllabus-delete"
-            onclick="deleteChapter(${si}, ${ci})">✖</button>
-        </div>
-      `;
-
-      c.subtopics.forEach((t, ti) => {
-        syllabusContainer.innerHTML += `
-          <div class="syllabus-row syllabus-subtopic">
-            <input type="checkbox" ${t.done ? "checked" : ""}
-              onchange="toggleSubtopic(${si}, ${ci}, ${ti})">
-            ${t.text}
-            <button class="syllabus-delete"
-              onclick="deleteSubtopic(${si}, ${ci}, ${ti})">✖</button>
-          </div>
-        `;
-      });
-    });
-  });
-}
-
 
   renderSubjects();
-  renderTasks();
   renderSyllabus();
-  populateSubjects();
-  renderPlanner();
 });
-
