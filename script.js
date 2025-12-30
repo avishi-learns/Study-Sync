@@ -330,3 +330,130 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSyllabus();
   populateSyllabusSelects();
 });
+
+/* =========================
+   SYLLABUS – GLOBAL FIX
+========================= */
+
+let syllabus = JSON.parse(localStorage.getItem("syllabus")) || [];
+
+function saveSyllabus() {
+  localStorage.setItem("syllabus", JSON.stringify(syllabus));
+}
+
+window.addSyllabusSubject = function () {
+  const input = document.getElementById("syllabusSubjectInput");
+  if (!input || !input.value.trim()) return;
+
+  syllabus.push({
+    subject: input.value.trim(),
+    chapters: []
+  });
+
+  input.value = "";
+  saveSyllabus();
+  renderSyllabus();
+  populateSubjects();
+};
+
+window.addChapter = function () {
+  const subjectName = document.getElementById("syllabusSubjectSelect").value;
+  const input = document.getElementById("chapterInput");
+  if (!subjectName || !input.value.trim()) return;
+
+  const subject = syllabus.find(s => s.subject === subjectName);
+  subject.chapters.push({ name: input.value.trim(), subtopics: [] });
+
+  input.value = "";
+  saveSyllabus();
+  renderSyllabus();
+  populateSubjects();
+};
+
+window.addSubtopic = function () {
+  const subjectName = document.getElementById("syllabusSubjectSelect2").value;
+  const chapterName = document.getElementById("syllabusChapterSelect").value;
+  const input = document.getElementById("subtopicInput");
+
+  if (!subjectName || !chapterName || !input.value.trim()) return;
+
+  const subject = syllabus.find(s => s.subject === subjectName);
+  const chapter = subject.chapters.find(c => c.name === chapterName);
+
+  chapter.subtopics.push({
+    text: input.value.trim(),
+    done: false
+  });
+
+  input.value = "";
+  saveSyllabus();
+  renderSyllabus();
+};
+
+window.toggleSubtopic = function (si, ci, ti) {
+  syllabus[si].chapters[ci].subtopics[ti].done ^= 1;
+  saveSyllabus();
+  renderSyllabus();
+};
+
+function populateSubjects() {
+  const s1 = document.getElementById("syllabusSubjectSelect");
+  const s2 = document.getElementById("syllabusSubjectSelect2");
+  const c = document.getElementById("syllabusChapterSelect");
+
+  s1.innerHTML = "";
+  s2.innerHTML = "";
+  c.innerHTML = "";
+
+  syllabus.forEach(s => {
+    s1.innerHTML += `<option>${s.subject}</option>`;
+    s2.innerHTML += `<option>${s.subject}</option>`;
+  });
+
+  populateChapterSelect();
+}
+
+window.populateChapterSelect = function () {
+  const subjectName = document.getElementById("syllabusSubjectSelect2").value;
+  const c = document.getElementById("syllabusChapterSelect");
+  c.innerHTML = "";
+
+  const subject = syllabus.find(s => s.subject === subjectName);
+  if (!subject) return;
+
+  subject.chapters.forEach(ch =>
+    c.innerHTML += `<option>${ch.name}</option>`
+  );
+};
+
+function renderSyllabus() {
+  const container = document.getElementById("syllabusContainer");
+  container.innerHTML = "";
+
+  // auto-remove empty subjects
+  syllabus = syllabus.filter(s =>
+    s.chapters.some(c => c.subtopics.length)
+  );
+
+  syllabus.forEach((s, si) => {
+    container.innerHTML += `<div class="syllabus-subject">${s.subject}</div>`;
+
+    s.chapters.forEach((c, ci) => {
+      if (!c.subtopics.length) return;
+
+      container.innerHTML += `<div class="syllabus-chapter">• ${c.name}</div>`;
+
+      c.subtopics.forEach((t, ti) => {
+        container.innerHTML += `
+          <div class="syllabus-subtopic">
+            <input type="checkbox" ${t.done ? "checked" : ""}
+              onchange="toggleSubtopic(${si},${ci},${ti})">
+            ${t.text}
+          </div>`;
+      });
+    });
+  });
+
+  saveSyllabus();
+  populateSubjects();
+}
