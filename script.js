@@ -239,32 +239,44 @@ document.addEventListener("DOMContentLoaded", () => {
       syllabusChapterSelect.innerHTML+=`<option>${c.name}</option>`
     );
   };
+function renderSyllabus() {
+  syllabusContainer.innerHTML = "";
 
-  function renderSyllabus() {
-    syllabusContainer.innerHTML="";
-    syllabus.forEach((s,si)=>{
-      syllabusContainer.innerHTML+=`
-        <div class="syllabus-subject">${s.subject}</div>`;
-      s.chapters.forEach((c,ci)=>{
-        syllabusContainer.innerHTML+=`
-          <div class="syllabus-row syllabus-chapter">
-            • ${c.name}
+  // 🔥 CLEANUP: remove empty subjects
+  syllabus = syllabus.filter(s => s.chapters.length > 0);
+
+  saveSyllabus();
+  populateSubjects();
+
+  syllabus.forEach((s, si) => {
+    syllabusContainer.innerHTML += `
+      <div class="syllabus-subject">${s.subject}</div>
+    `;
+
+    s.chapters.forEach((c, ci) => {
+      syllabusContainer.innerHTML += `
+        <div class="syllabus-row syllabus-chapter">
+          • ${c.name}
+          <button class="syllabus-delete"
+            onclick="deleteChapter(${si}, ${ci})">✖</button>
+        </div>
+      `;
+
+      c.subtopics.forEach((t, ti) => {
+        syllabusContainer.innerHTML += `
+          <div class="syllabus-row syllabus-subtopic">
+            <input type="checkbox" ${t.done ? "checked" : ""}
+              onchange="toggleSubtopic(${si}, ${ci}, ${ti})">
+            ${t.text}
             <button class="syllabus-delete"
-              onclick="deleteChapter(${si},${ci})">✖</button>
-          </div>`;
-        c.subtopics.forEach((t,ti)=>{
-          syllabusContainer.innerHTML+=`
-            <div class="syllabus-row syllabus-subtopic">
-              <input type="checkbox" ${t.done?"checked":""}
-                onchange="toggleSubtopic(${si},${ci},${ti})">
-              ${t.text}
-              <button class="syllabus-delete"
-                onclick="deleteSubtopic(${si},${ci},${ti})">✖</button>
-            </div>`;
-        });
+              onclick="deleteSubtopic(${si}, ${ci}, ${ti})">✖</button>
+          </div>
+        `;
       });
     });
-  }
+  });
+}
+
 
   renderSubjects();
   renderTasks();
@@ -272,3 +284,4 @@ document.addEventListener("DOMContentLoaded", () => {
   populateSubjects();
   renderPlanner();
 });
+
