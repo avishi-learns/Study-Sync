@@ -35,7 +35,8 @@ git clone https://github.com/avishi-learns/Study-Sync.git
 
 ---
 
-## 🎥 Demo Video
-
 ```
+
+## Demo Video
+
 [Click here to watch the demo video](https://youtu.be/4sADj8ydXNU)
