@@ -242,4 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTasks();
   renderSyllabus();
   populateSubjects();
+  renderPlanner();
+
 });
+
