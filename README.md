@@ -35,6 +35,6 @@ git clone https://github.com/avishi-learns/Study-Sync.git
 
 ---
 
-
 ## 🎥 Demo Video
+```bash
 [Click here to watch the demo video](https://youtu.be/4sADj8ydXNU)
