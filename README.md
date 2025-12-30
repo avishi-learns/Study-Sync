@@ -32,3 +32,9 @@ Built using pure HTML, CSS, and JavaScript — no frameworks, no backend.
 
 ```bash
 git clone https://github.com/avishi-learns/Study-Sync.git
+
+---
+
+
+## 🎥 Demo Video
+[Click here to watch the demo video](https://youtu.be/4sADj8ydXNU)
