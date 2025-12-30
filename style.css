@@ -193,3 +193,17 @@ button {
   border-top: 1px solid var(--border);
   background: var(--bg);
 }
+
+.syllabus-delete {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.syllabus-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
